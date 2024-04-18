@@ -7,6 +7,7 @@
 
 import Vapor
 import JWT
+import JWTKit
 
 extension Application {
     public var firebaseJwt: FirebaseJWT {
@@ -16,11 +17,17 @@ extension Application {
     public struct FirebaseJWT {
         let application: Application
         
-        public func signers(on request: Request) -> EventLoopFuture<JWTSigners> {
-            self.jwks.get(on: request).flatMapThrowing {
-                let signers = JWTSigners()
-                try signers.use(jwks: $0)
-                return signers
+        public func signers(on request: Request) async throws -> JWTKeyCollection {
+            try await withCheckedThrowingContinuation { continuation in
+                self.jwks.get(on: request).flatMapThrowing { jwks in
+                    // Assuming `add(jwks:)` is an async function
+                    Task {
+                        let collection = try await JWTKeyCollection().add(jwks: jwks)
+                        continuation.resume(returning: collection)
+                    }
+                }.whenFailure { error in
+                    continuation.resume(throwing: error)
+                }
             }
         }
         

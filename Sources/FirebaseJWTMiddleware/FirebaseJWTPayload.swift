@@ -6,8 +6,20 @@
 //
 
 import JWT
+import JWTKit
+import Foundation
 
 public struct FirebaseJWTPayload: JWTPayload {
+    public func verify(using algorithm: any JWTKit.JWTAlgorithm) async throws {
+        guard issuer.value.contains("securetoken.google.com") else {
+            throw JWTError.claimVerificationFailure(failedClaim: IssuerClaim(value: issuer.value), reason: "Claim wasn't issued by Google")
+        }
+        guard subject.value.count <= 256 else {
+            throw JWTError.claimVerificationFailure(failedClaim: SubjectClaim(value: subject.value), reason: "Subject claim beyond 255 ASCII characters long.")
+        }
+        try expirationAt.verifyNotExpired()
+    }
+    
     enum CodingKeys: String, CodingKey {
         case issuer = "iss"
         case subject = "sub"
@@ -47,16 +59,4 @@ public struct FirebaseJWTPayload: JWTPayload {
     public let name: String?
     public let isEmailVerified: Bool?
     public let phoneNumber: String?
-    
-    public func verify(using signer: JWTSigner) throws {
-        guard self.issuer.value.contains("securetoken.google.com") else {
-            throw JWTError.claimVerificationFailure(name: "iss", reason: "Claim wasn't issued by Google")
-        }
-        
-        guard self.subject.value.count <= 255 else {
-            throw JWTError.claimVerificationFailure(name: "sub", reason: "Subject claim beyond 255 ASCII characters long.")
-        }
-        
-        try self.expirationAt.verifyNotExpired()
-    }
 }
