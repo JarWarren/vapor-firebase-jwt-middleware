@@ -16,10 +16,9 @@ eyJhbGciOiJSUzI1NiIsImtpZCI6IjgzYTczOGUyMWI5MWNlMjRmNDM0ODBmZTZmZWU0MjU4Yzg0ZGI0
         
         app.firebaseJwt.applicationIdentifier = FirebaseJWTMiddlewareTests.applicationIdentifier
         
-        app.get("test") { req in
-            req.firebaseJwt.verify().map {
-                $0.email ?? "none"
-            }
+        app.get("test") { req async in
+            let payload = try? await req.firebaseJwt.verify()
+            return payload?.email ?? "none"
         }
         
         var headers = HTTPHeaders()

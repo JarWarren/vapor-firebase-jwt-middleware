@@ -21,7 +21,7 @@ let package = Package(
     name: "Project",
     dependencies: [
         ...
-        .package(name: "FirebaseJWTMiddleware", url: "https://github.com/barisatamer/vapor-firebase-jwt-middleware.git", from: "1.0.0"),
+        .package(name: "FirebaseJWTMiddleware", url: "https://github.com/JarWarren/vapor-firebase-jwt-middleware.git", from: "1.0.0"),
         ],
         targets: [
             .target(name: "App", dependencies: [
